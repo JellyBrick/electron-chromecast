@@ -1,8 +1,8 @@
 {
   "name": "electron-chromecast",
-  "version": "1.1.0",
+  "version": "1.2.0",
   "description": "An implementation of the chrome.cast API in electron",
-  "main": "build/index.js",
+  "main": "src/index.js",
   "contributors": [
     {
       "name": "Jesse Ostrander",
@@ -17,19 +17,15 @@
   "devDependencies": {
     "eslint": "^8.56.0",
     "eslint-config-airbnb-base": "^15.0.0",
-    "eslint-plugin-import": "^2.29.1",
-    "gulp": "^4.0.2",
-    "gulp-clean": "^0.4.0"
+    "eslint-plugin-import": "^2.29.1"
   },
   "scripts": {
-    "build": "gulp build",
     "lint": "eslint ./src",
-    "prepublish": "npm run build",
     "test": "npm run lint"
   },
   "repository": {
     "type": "git",
-    "url": "git+https://github.com/GPMDP/electron-chromecast.git"
+    "url": "git+https://github.com/JellyBrick/electron-chromecast.git"
   },
   "keywords": [
     "chromecast",
