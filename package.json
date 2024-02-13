@@ -1,5 +1,5 @@
 {
-  "name": "electron-chromecast",
+  "name": "@jellybrick/electron-chromecast",
   "version": "1.2.0",
   "description": "An implementation of the chrome.cast API in electron",
   "main": "src/index.js",
