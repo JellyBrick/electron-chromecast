@@ -1,32 +1,49 @@
-import Cast from './cast';
+import { Cast } from './cast';
 
-global.chrome = {
+export const chrome = {
   cast: Cast, // eslint-disable-line
 };
 
-global.requestHandler = (receiverList) =>
-  new Promise((resolve) => resolve(receiverList[0]));
+export const requestHandler = (receiverList) => new Promise((resolve) => {
+  resolve(receiverList[0]);
+});
 
-global.castConsole = {
+export const castSetting = {
+  devMode: false,
+};
+
+export const castConsole = {
   log: (...args) => {
-    if (!global.castDevMode) return;
+    if (!castSetting.devMode) return;
     console.log(...args); // eslint-disable-line
   },
   info: (...args) => {
-    if (!global.castDevMode) return;
+    if (!castSetting.devMode) return;
     console.info(...args); // eslint-disable-line
   },
   warn: (...args) => {
-    if (!global.castDevMode) return;
+    if (!castSetting.devMode) return;
     console.warn(...args); // eslint-disable-line
   },
   error: (...args) => {
-    if (!global.castDevMode) return;
+    if (!castSetting.devMode) return;
     console.error(...args); // eslint-disable-line
   },
 };
 
-module.exports = (requestHandler, dev) => {
-  global.requestHandler = requestHandler;
-  global.castDevMode = dev;
+/**
+ * @param {{
+ *   chrome: {},
+ *   castSetting: {},
+ *   castConsole: {},
+ *   requestHandler: (receiverList) => Promise<{}>,
+ * }} obj
+ */
+export const injectChromeCompatToObject = (obj) => {
+  /* eslint-disable no-param-reassign */
+  obj.chrome = chrome;
+  obj.castSetting = castSetting;
+  obj.castConsole = castConsole;
+  obj.requestHandler = requestHandler;
+  /* eslint-enable no-param-reassign */
 };

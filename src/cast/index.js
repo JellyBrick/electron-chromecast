@@ -1,73 +1,92 @@
-import _ from 'lodash';
+import { Browser } from '@astronautlabs/mdns';
+
 import ApiConfig from './_Classes/ApiConfig';
 import Error from './_Classes/Error';
 import Image from './_Classes/Image';
-import Mdns from 'node-mdns-easy';
 import Receiver from './_Classes/Receiver';
 import ReceiverDisplayStatus from './_Classes/ReceiverDisplayStatus';
 import SenderApplication from './_Classes/SenderApplication';
 import Session from './_Classes/Session';
 import SessionRequest from './_Classes/SessionRequest';
 import Volume from './_Classes/Volume';
-
 import Media from './media';
 
-const mdns = new Mdns();
-const browser = mdns.createBrowser(mdns.getLibrary().tcp('googlecast'));
+const browser = new Browser('_googlecast._tcp');
 
 // DEV: Global config variables
 let globalApiConfig;
+/**
+ * @type {Receiver[]}
+ */
 let receiverList = [];
 const receiverListeners = [];
+/**
+ * @type {Session[]}
+ */
 const sessions = [];
+const uniqBy = (arr, predicate) => {
+  const cb = typeof predicate === 'function' ? predicate : (o) => o[predicate];
 
-browser.on('serviceUp', (service) => {
-  const receiver = new chrome.cast.Receiver(service.txtRecord.id, service.txtRecord.fn);
+  return [...arr.reduce((map, item) => {
+    const key = (item === null || item === undefined) ?
+      item : cb(item);
 
-  receiver.ipAddress = service.addresses[0];
-  receiver.service_fullname = service.fullname;
-  receiver.port = service.port;
-  receiverList.push(receiver);
-  receiverList = _.uniqBy(receiverList, _.property('service_fullname'));
+    map.has(key) || map.set(key, item);
+
+    return map;
+  }, new Map()).values()];
+};
+
+
+browser.on(
+  'serviceUp',
   /**
-  Service object
-  {
-    interfaceIndex: 4,
-    name: 'somehost',
-    networkInterface: 'en0',
-    type: {name: 'http', protocol: 'tcp', subtypes: []},
-    replyDomain: 'local.',
-    fullname: 'somehost._http._tcp.local.',
-    host: 'somehost.local.',
-    port: 4321,
-    addresses: [ '10.1.1.50', 'fe80::21f:5bff:fecd:ce64' ]
-  }
-  **/
-  // DEV: Notify listeners that we found cast devices
-  if (globalApiConfig) globalApiConfig.receiverListener(chrome.cast.ReceiverAvailability.AVAILABLE);
-});
+   * @param {import('@astronautlabs/mdns').Service} service
+   */
+  (service) => {
+    const receiver = new chrome.cast.Receiver(service.txt.id, service.txt.fn);
 
-browser.on('serviceDown', (service) => {
-  const downReceiver = new chrome.cast.Receiver(service.fullname, service.name);
-  downReceiver.ipAddress = service.addresses[0];
+    receiver.ipAddress = service.addresses[0];
+    receiver.service_fullname = service.fullname;
+    receiver.port = service.port;
+    receiverList.push(receiver);
+    receiverList = uniqBy(receiverList, (it) => it.service_fullname);
+    /**
+     Service object
+     {
+     interfaceIndex: 4,
+     name: 'somehost',
+     networkInterface: 'en0',
+     type: {name: 'http', protocol: 'tcp', subtypes: []},
+     replyDomain: 'local.',
+     fullname: 'somehost._http._tcp.local.',
+     host: 'somehost.local.',
+     port: 4321,
+     addresses: [ '10.1.1.50', 'fe80::21f:5bff:fecd:ce64' ]
+     }
+     **/
+    // DEV: Notify listeners that we found cast devices
+    if (globalApiConfig) globalApiConfig.receiverListener(chrome.cast.ReceiverAvailability.AVAILABLE);
+  },
+).on(
+  'serviceDown',
+  /**
+   * @param {import('@astronautlabs/mdns').Service} service
+   */
+  (service) => {
+    const downReceiver = new chrome.cast.Receiver(service.fullname, service.name);
+    downReceiver.ipAddress = service.addresses[0];
 
-  receiverList = receiverList.filter((receiver) =>
-    receiver.ipAddress !== downReceiver.ipAddress &&
-    receiver.name !== downReceiver.name &&
-    receiver.friendlyName !== downReceiver.friendlyName
-  );
-  // DEV: If we have run out of receivers, notify listeners that there are none available
-  if (receiverList.length === 0) globalApiConfig.receiverListener(chrome.cast.ReceiverAvailability.UNAVAILABLE);
-});
-if (browser.ready) {
-  browser.browse();
-} else {
-  browser.once('ready', () => {
-    browser.browse();
-  });
-}
+    receiverList = receiverList.filter((receiver) =>
+      receiver.ipAddress !== downReceiver.ipAddress &&
+      receiver.friendlyName !== downReceiver.friendlyName
+    );
+    // DEV: If we have run out of receivers, notify listeners that there are none available
+    if (receiverList.length === 0) globalApiConfig.receiverListener(chrome.cast.ReceiverAvailability.UNAVAILABLE);
+  },
+).start();
 
-export default class Cast {
+export const Cast = class {
   // https://developers.google.com/cast/docs/reference/chrome/chrome.cast#.AutoJoinPolicy
   static AutoJoinPolicy = {
     TAB_AND_ORIGIN_SCOPED: 'TAB_AND_ORIGIN_SCOPED',
@@ -185,7 +204,7 @@ export default class Cast {
     if (receiverList.length === 0) {
       errorCallback(new chrome.cast.Error(chrome.cast.ErrorCode.RECEIVER_UNAVAILABLE));
     } else {
-      global.requestHandler(receiverList)
+      requestHandler(receiverList)
         .then((chosenDevice) => {
           const createSession = () => {
             const session = new chrome.cast.Session(
