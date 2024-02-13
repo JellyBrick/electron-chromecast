@@ -1,6 +1,6 @@
 {
   "name": "@jellybrick/electron-chromecast",
-  "version": "1.2.0",
+  "version": "1.2.1",
   "description": "An implementation of the chrome.cast API in electron",
   "main": "src/index.js",
   "contributors": [
@@ -11,7 +11,7 @@
   ],
   "type": "module",
   "dependencies": {
-    "castv2": "^0.1.10",
+    "castv2": "git+https://github.com/metaquanta/node-castv2.git",
     "@astronautlabs/mdns": "^1.0.10"
   },
   "devDependencies": {

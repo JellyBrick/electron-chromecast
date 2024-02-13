@@ -4,6 +4,10 @@ export const chrome = {
   cast: Cast, // eslint-disable-line
 };
 
+/**
+ * @param {Array<{}>} receiverList
+ * @returns {Promise<unknown>}
+ */
 export const requestHandler = (receiverList) => new Promise((resolve) => {
   resolve(receiverList[0]);
 });

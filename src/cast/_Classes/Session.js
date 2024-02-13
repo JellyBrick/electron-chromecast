@@ -19,19 +19,19 @@ export default class Session {
         'sender-0',
         'receiver-0',
         'urn:x-cast:com.google.cast.tp.connection',
-        'JSON'
+        'JSON',
       );
       this.clientHeartbeat = this.client.createChannel(
         'sender-0',
         'receiver-0',
         'urn:x-cast:com.google.cast.tp.heartbeat',
-        'JSON'
+        'JSON',
       );
       this.clientReceiver = this.client.createChannel(
         'sender-0',
         'receiver-0',
         'urn:x-cast:com.google.cast.receiver',
-        'JSON'
+        'JSON',
       );
 
       // establish virtual connection to the receiver
@@ -81,14 +81,14 @@ export default class Session {
                 this.clientId,
                 this.transport,
                 'urn:x-cast:com.google.cast.tp.connection',
-                'JSON'
+                'JSON',
               );
               this.transportConnect.send({ type: 'CONNECT' });
               transportHeartbeat = this.client.createChannel(
                 this.clientId,
                 this.transport,
                 'urn:x-cast:com.google.cast.tp.heartbeat',
-                'JSON'
+                'JSON',
               );
               this.status = chrome.cast.SessionStatus.CONNECTED;
               this.sessionId = app.sessionId;
@@ -199,7 +199,7 @@ export default class Session {
         const media = new chrome.cast.media.Media(
           this.app.sessionId,
           mediaObject.status[0].mediaSessionId,
-          this._channels['urn:x-cast:com.google.cast.media']
+          this._channels['urn:x-cast:com.google.cast.media'],
         );
         this.media = media;
         successCallback(media);
